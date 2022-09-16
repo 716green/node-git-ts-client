@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+}
+
+form input {
+    padding: 0 1rem;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+ul {
+    list-style: none;
+    width: 90%;
+}
+
+li {
+    background: rgba(22, 31, 39, 0.7);
+    margin-left: 0;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+}
