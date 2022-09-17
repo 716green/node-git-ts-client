@@ -1,58 +1,53 @@
-import React, { useState, useEffect, FormEvent } from "react";
-import TodoList from "./TodoList";
+import React, { useState, useEffect, useContext, FormEvent } from "react";
 import axios from "axios";
-import { ITodo } from "./types";
-import TodoInput from "./TodoInput";
+import TodoList from "./components/TodoList";
+import TodoInput from "./components/TodoInput";
+import { GlobalContext } from "./context";
+import { ITodo } from "./helpers";
 
 const App: React.FC = () => {
+  const { todos, setTodos } = useContext(GlobalContext);
   const [currentTodo, setCurrentTodo] = useState<string>("");
-  const [todos, setTodos] = useState<ITodo[]>([]);
+
+  const setInitialTodos = async () => {
+    const response = await axios.get("http://localhost:3000/getTodos");
+    setTodos(response.data);
+  };
 
   useEffect(() => {
-    axios.get("http://localhost:3000/getTodos").then(({ data }) => {
-      console.log(data);
-      setTodos(data);
-    });
+    (async () => await setInitialTodos())();
   }, []);
 
   const addTodoHandler = async (e: FormEvent) => {
     e.preventDefault();
-    console.log({ currentTodo });
     await axios
       .post("http://localhost:3000/addTodo", {
         task: currentTodo,
       })
-      .then((_res) => {
+      .then(({ data }) => {
         setCurrentTodo("");
-        axios
-          .get("http://localhost:3000/getTodos")
-          .then(({ data }) => {
-            setTodos(data);
-          })
-          .catch((err) => console.error(err));
+        setTodos(data);
       })
       .catch((err) => console.error(err));
   };
 
   return (
     <main>
-      <h1 style={{ width: "100%", textAlign: "center" }}>Todo List</h1>
       <TodoInput
+        title="Todo List"
         currentTodo={currentTodo}
         setCurrentTodo={setCurrentTodo}
         addTodoHandler={addTodoHandler}
       />
 
-      <h2>Pending Tasks</h2>
       <TodoList
-        setTodos={setTodos}
-        todos={todos.filter(({ status }) => status === "pending")}
+        title="Pending Tasks"
+        todos={todos.filter((todo: ITodo) => todo.status === "pending")}
       />
 
-      <h2>Completed Tasks</h2>
       <TodoList
-        setTodos={setTodos}
-        todos={todos.filter(({ status }) => status !== "pending")}
+        title="Completed Tasks"
+        todos={todos.filter((todo: ITodo) => todo.status === "completed")}
       />
     </main>
   );
