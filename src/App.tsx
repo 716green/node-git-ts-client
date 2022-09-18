@@ -1,39 +1,70 @@
-import React, { FormEvent, useState } from "react";
-import TodoList from "./TodoList";
+import React, { useState, useEffect, useContext, FormEvent } from "react";
 import axios from "axios";
-
-// Type annotations are optional, but recommended, FC stands for Function Component
+import TodoList from "@/components/TodoList";
+import TodoInput from "@/components/TodoInput";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { GlobalContext } from "@/context";
+import { ITodo } from "@/helpers";
 
 const App: React.FC = () => {
+  const { todos, setTodos, apiUrl } = useContext(GlobalContext);
   const [currentTodo, setCurrentTodo] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [todosUpdating, setTodosUpdating] = useState<boolean>(false);
 
-  const addTodoHandler = async (e: FormEvent) => {
+  const setInitialTodos = async (): Promise<void> => {
+    const { data } = await axios.get(`${apiUrl}/getTodos`);
+    setTodos(data);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    (async () => await setInitialTodos())().then(() => setLoading(false));
+  }, []);
+
+  const addTodoHandler = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
-    console.log({ currentTodo });
     await axios
-      .post("http://localhost:3000/addTodo", {
-        todo: currentTodo,
+      .post(`${apiUrl}/addTodo`, {
+        task: currentTodo,
       })
       .then(({ data }) => {
-        console.log(data.message);
+        setCurrentTodo("");
+        setTodos(data);
       })
       .catch((err) => console.error(err));
   };
 
   return (
     <main>
-      <h1>Todo List</h1>
-      <TodoList />
-      <form action="" style={{ display: "flex" }}>
-        <input
-          onChange={(e) => setCurrentTodo(e.target.value)}
-          type="text"
-          style={{ width: "100%" }}
-        />
-        <button onClick={addTodoHandler} type="submit">
-          +
-        </button>
-      </form>
+      {loading ? (
+        <section style={{ height: "100vh", width: "100vw", display: "flex" }}>
+          <LoadingSpinner />
+        </section>
+      ) : (
+        <>
+          <TodoInput
+            title="Todo List"
+            currentTodo={currentTodo}
+            setCurrentTodo={setCurrentTodo}
+            addTodoHandler={addTodoHandler}
+          />
+
+          <TodoList
+            title="Pending Tasks"
+            todos={todos.filter((todo: ITodo) => todo.status === "pending")}
+            loading={todosUpdating}
+            setLoading={setTodosUpdating}
+          />
+
+          <TodoList
+            title="Completed Tasks"
+            todos={todos.filter((todo: ITodo) => todo.status === "completed")}
+            loading={todosUpdating}
+            setLoading={setTodosUpdating}
+          />
+        </>
+      )}
     </main>
   );
 };
