@@ -10,7 +10,6 @@ const App: React.FC = () => {
   const { todos, setTodos, apiUrl } = useContext(GlobalContext);
   const [currentTodo, setCurrentTodo] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
-  // TODO - setup
   const [todosUpdating, setTodosUpdating] = useState<boolean>(false);
 
   const setInitialTodos = async (): Promise<void> => {
@@ -55,12 +54,14 @@ const App: React.FC = () => {
             title="Pending Tasks"
             todos={todos.filter((todo: ITodo) => todo.status === "pending")}
             loading={todosUpdating}
+            setLoading={setTodosUpdating}
           />
 
           <TodoList
             title="Completed Tasks"
             todos={todos.filter((todo: ITodo) => todo.status === "completed")}
             loading={todosUpdating}
+            setLoading={setTodosUpdating}
           />
         </>
       )}

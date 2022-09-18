@@ -8,29 +8,34 @@ interface IProps {
   todos: ITodo[];
   title: string;
   loading: boolean;
+  setLoading: any;
 }
 
-const TodoList: React.FC<IProps> = ({ todos, title, loading }) => {
+const TodoList: React.FC<IProps> = ({ todos, title, loading, setLoading }) => {
   const { setTodos, apiUrl } = useContext(GlobalContext);
   const completeTaskHandler = (todo: ITodo) => {
+    setLoading(true);
     const updatedTodo = { ...todo, status: "completed" };
 
     axios
       .put(`${apiUrl}/updateTodo`, updatedTodo)
       .then(({ data }) => setTodos(data))
+      .finally(() => setLoading(false))
       .catch((err: Error) => console.error(err));
   };
 
   const deleteTodoHandler = (id: number) => {
+    setLoading(true);
     axios
       .delete(`${apiUrl}/deleteTodo/${id}`)
       .then(({ data }) => setTodos(data))
+      .finally(() => setLoading(false))
       .catch((err: Error) => console.error(err));
   };
 
   return (
     <section>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", justifyContent: "left" }}>
         <h2>{title}</h2>
         {loading && (
           <LoadingSpinner
